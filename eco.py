@@ -19,6 +19,10 @@ from datasurface.md.types import VarChar, Date
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase
 
+KUB_NAME_SPACE: str = "ns-kub-pg-test"
+GH_REPO_OWNER: str = "billynewport"
+GH_REPO_NAME: str = "yellow_starter"
+
 
 def createEcosystem() -> Ecosystem:
     """This is a very simple test model with a single datastore and dataset.
@@ -27,7 +31,7 @@ def createEcosystem() -> Ecosystem:
     # Kubernetes merge database configuration
     k8s_merge_datacontainer: PostgresDatabase = PostgresDatabase(
         "K8sMergeDB",  # Container name for Kubernetes deployment
-        hostPort=HostPortPair("pg-data.ns-yp-starter.svc.cluster.local", 5432),
+        hostPort=HostPortPair(f"pg-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
         databaseName="datasurface_merge"  # The database we created
     )
@@ -35,7 +39,7 @@ def createEcosystem() -> Ecosystem:
 
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
-        repo=GitHubRepository("billynewport/yellow_starter", "main"),
+        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main"),
         data_platforms=[
             YellowDataPlatform(
                 name="YellowLive",
@@ -54,7 +58,7 @@ def createEcosystem() -> Ecosystem:
                 "YellowForensic",
                 locs={LocationKey("MyCorp:USA/NY_1")},
                 doc=PlainTextDocumentation("Forensic Yellow DataPlatform"),
-                namespace="ns-kub-pg-test",
+                namespace=KUB_NAME_SPACE,
                 connectCredentials=Credential("connect", CredentialType.API_TOKEN),
                 postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
                 gitCredential=Credential("git", CredentialType.API_TOKEN),
@@ -66,7 +70,7 @@ def createEcosystem() -> Ecosystem:
         ],
         default_data_platform=DefaultDataPlatform(DataPlatformKey("YellowLive")),
         governance_zone_declarations=[
-            GovernanceZoneDeclaration("USA", GitHubRepository("billynewport/yellow_starter", "gzmain"))
+            GovernanceZoneDeclaration("USA", GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "gzmain"))
         ],
         infrastructure_vendors=[
             # Onsite data centers
@@ -90,7 +94,7 @@ def createEcosystem() -> Ecosystem:
     # Add a team to the governance zone
     gz.add(TeamDeclaration(
         "team1",
-        GitHubRepository("billynewport/yellow_starter", "team1")
+        GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "team1")
         ))
 
     team: Team = gz.getTeamOrThrow("team1")
@@ -101,7 +105,7 @@ def createEcosystem() -> Ecosystem:
             capture_metadata=SQLSnapshotIngestion(
                 PostgresDatabase(
                     "CustomerDB",  # Model name for database
-                     hostPort=HostPortPair("pg-data.ns-yp-starter.svc.cluster.local", 5432),
+                     hostPort=HostPortPair(f"pg-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 ),
