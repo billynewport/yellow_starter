@@ -19,7 +19,7 @@ from datasurface.md.types import VarChar, Date
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase
 
-KUB_NAME_SPACE: str = "ns-kub-pg-test"
+KUB_NAME_SPACE: str = "ns-yellow-starter"
 GH_REPO_OWNER: str = "billynewport"
 GH_REPO_NAME: str = "yellow_starter"
 
@@ -45,7 +45,7 @@ def createEcosystem() -> Ecosystem:
                 name="YellowLive",
                 locs={LocationKey("MyCorp:USA/NY_1")},
                 doc=PlainTextDocumentation("Live Yellow DataPlatform"),
-                namespace="ns-yp-starter",
+                namespace=KUB_NAME_SPACE,
                 connectCredentials=Credential("connect", CredentialType.API_TOKEN),
                 postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
                 gitCredential=Credential("git", CredentialType.API_TOKEN),
