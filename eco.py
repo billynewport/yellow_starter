@@ -27,7 +27,7 @@ from datasurface.md.codeartifact import PythonRepoCodeArtifact
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
-GH_DT_REPO_NAME: str = "yellow_starter_transformer"
+GH_DT_REPO_NAME: str = "yellow_starter"  # For now, we use the same repo for the transformer
 
 
 def createEcosystem() -> Ecosystem:
