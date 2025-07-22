@@ -36,7 +36,6 @@ def createEcosystem() -> Ecosystem:
         databaseName="datasurface_merge"  # The database we created
     )
 
-
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
         repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main"),
@@ -105,7 +104,7 @@ def createEcosystem() -> Ecosystem:
             capture_metadata=SQLSnapshotIngestion(
                 PostgresDatabase(
                     "CustomerDB",  # Model name for database
-                     hostPort=HostPortPair(f"pg-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
+                    hostPort=HostPortPair(f"pg-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 ),
