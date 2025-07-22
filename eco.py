@@ -1,9 +1,13 @@
 """
 // Copyright (c) William Newport
 // SPDX-License-Identifier: BUSL-1.1
+
+This is a starter datasurface repository. It defines a simple Ecosystem using YellowDataPlatform with Live and Forensic modes.
+It will generate 2 pipelines, one with live records only and the other with full milestoning.
 """
 
-from datasurface.md import Team, GovernanceZoneDeclaration, GovernanceZone, InfrastructureVendor, InfrastructureLocation, TeamDeclaration
+from datasurface.md import Team, GovernanceZoneDeclaration, GovernanceZone, InfrastructureVendor, InfrastructureLocation, \
+    TeamDeclaration, DataTransformer
 from datasurface.md import Ecosystem, LocationKey, DataPlatformManagedDataContainer
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
@@ -18,10 +22,12 @@ from datasurface.md.schema import DDLTable, DDLColumn, NullableStatus, PrimaryKe
 from datasurface.md.types import VarChar, Date
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase
+from datasurface.md.codeartifact import PythonRepoCodeArtifact
 
-KUB_NAME_SPACE: str = "ns-yellow-starter"
-GH_REPO_OWNER: str = "billynewport"
-GH_REPO_NAME: str = "yellow_starter"
+KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
+GH_REPO_OWNER: str = "billynewport"  # Change to your github username
+GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
+GH_DT_REPO_NAME: str = "yellow_starter_transformer"
 
 
 def createEcosystem() -> Ecosystem:
@@ -108,7 +114,7 @@ def createEcosystem() -> Ecosystem:
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 ),
-                CronTrigger("Every 1 minute", "*/5 * * * *"),  # Cron trigger for ingestion
+                CronTrigger("Every 5 minute", "*/5 * * * *"),  # Cron trigger for ingestion
                 IngestionConsistencyType.MULTI_DATASET,  # Ingestion consistency type
                 Credential("postgres", CredentialType.USER_PASSWORD),  # Credential for platform to read from database
                 ),
@@ -152,7 +158,8 @@ def createEcosystem() -> Ecosystem:
                 "LiveDSG",
                 sinks=[
                     DatasetSink("Store1", "customers"),
-                    DatasetSink("Store1", "addresses")
+                    DatasetSink("Store1", "addresses"),
+                    DatasetSink("MaskedCustomers", "customers")
                 ],
                 platform_chooser=WorkspacePlatformConfig(
                     hist=ConsumerRetentionRequirements(
@@ -166,7 +173,8 @@ def createEcosystem() -> Ecosystem:
                 "ForensicDSG",
                 sinks=[
                     DatasetSink("Store1", "customers"),
-                    DatasetSink("Store1", "addresses")
+                    DatasetSink("Store1", "addresses"),
+                    DatasetSink("MaskedCustomers", "customers")
                 ],
                 platform_chooser=WorkspacePlatformConfig(
                     hist=ConsumerRetentionRequirements(
@@ -174,6 +182,41 @@ def createEcosystem() -> Ecosystem:
                         latency=DataLatency.MINUTES,
                         regulator=None
                     )
+                )
+            )
+        ),
+        Workspace(
+            "MaskedStoreGenerator",
+            DataPlatformManagedDataContainer("MaskedStoreGenerator container"),
+            DatasetGroup(
+                "Original",
+                sinks=[DatasetSink("Store1", "customers")]
+            ),
+            DataTransformer(
+                name="MaskedCustomerGenerator",
+                code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main"), "main"),
+                trigger=CronTrigger("Every 10 minute", "*/10 * * * *"),
+                store=Datastore(
+                    name="MaskedCustomers",
+                    documentation=PlainTextDocumentation("MaskedCustomers datastore"),
+                    datasets=[
+                        Dataset(
+                            "customers",
+                            schema=DDLTable(
+                                columns=[
+                                    DDLColumn("id", VarChar(20), nullable=NullableStatus.NOT_NULLABLE, primary_key=PrimaryKeyStatus.PK),
+                                    DDLColumn("firstname", VarChar(100), nullable=NullableStatus.NOT_NULLABLE),
+                                    DDLColumn("lastname", VarChar(100), nullable=NullableStatus.NOT_NULLABLE),
+                                    DDLColumn("dob", Date(), nullable=NullableStatus.NOT_NULLABLE),
+                                    DDLColumn("email", VarChar(100)),
+                                    DDLColumn("phone", VarChar(100)),
+                                    DDLColumn("primaryaddressid", VarChar(20)),
+                                    DDLColumn("billingaddressid", VarChar(20))
+                                ]
+                            ),
+                            classifications=[SimpleDC(SimpleDCTypes.PUB, "Customer")]
+                        )
+                    ]
                 )
             )
         )
