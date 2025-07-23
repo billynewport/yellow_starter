@@ -42,9 +42,11 @@ def createEcosystem() -> Ecosystem:
         databaseName="datasurface_merge"  # The database we created
     )
 
+    git: Credential = Credential("git", CredentialType.API_TOKEN)
+
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
-        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main"),
+        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git),
         data_platforms=[
             YellowDataPlatform(
                 name="YellowLive",
@@ -53,7 +55,7 @@ def createEcosystem() -> Ecosystem:
                 namespace=KUB_NAME_SPACE,
                 connectCredentials=Credential("connect", CredentialType.API_TOKEN),
                 postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
-                gitCredential=Credential("git", CredentialType.API_TOKEN),
+                gitCredential=git,
                 slackCredential=Credential("slack", CredentialType.API_TOKEN),
                 merge_datacontainer=k8s_merge_datacontainer,  # ✅ Kubernetes merge DB
                 airflowName="airflow",
@@ -99,7 +101,7 @@ def createEcosystem() -> Ecosystem:
     # Add a team to the governance zone
     gz.add(TeamDeclaration(
         "team1",
-        GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "team1")
+        GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "team1", credential=git)
         ))
 
     team: Team = gz.getTeamOrThrow("team1")
@@ -194,7 +196,7 @@ def createEcosystem() -> Ecosystem:
             ),
             DataTransformer(
                 name="MaskedCustomerGenerator",
-                code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main"), "main"),
+                code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git), "main"),
                 trigger=CronTrigger("Every 10 minute", "*/10 * * * *"),
                 store=Datastore(
                     name="MaskedCustomers",
