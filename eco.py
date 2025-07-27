@@ -60,7 +60,7 @@ def createEcosystem() -> Ecosystem:
                 merge_datacontainer=k8s_merge_datacontainer,  # ✅ Kubernetes merge DB
                 airflowName="airflow",
                 milestoneStrategy=YellowMilestoneStrategy.LIVE_ONLY,
-                git_cache_enabled=True
+                git_cache_enabled=False
                 ),
             YellowDataPlatform(
                 "YellowForensic",
@@ -74,7 +74,7 @@ def createEcosystem() -> Ecosystem:
                 merge_datacontainer=k8s_merge_datacontainer,  # ✅ Kubernetes merge DB
                 airflowName="airflow",
                 milestoneStrategy=YellowMilestoneStrategy.BATCH_MILESTONED,
-                git_cache_enabled=True
+                git_cache_enabled=False
                 )
         ],
         default_data_platform=DefaultDataPlatform(DataPlatformKey("YellowLive")),
