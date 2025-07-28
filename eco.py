@@ -12,7 +12,7 @@ from datasurface.md import Ecosystem, LocationKey, DataPlatformManagedDataContai
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
-from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy
+from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider
 from datasurface.md import CloudVendor, DefaultDataPlatform, \
         DataPlatformKey, WorkspacePlatformConfig
 from datasurface.md import ValidationTree
@@ -44,37 +44,33 @@ def createEcosystem() -> Ecosystem:
 
     git: Credential = Credential("git", CredentialType.API_TOKEN)
 
+    psp: YellowPlatformServiceProvider = YellowPlatformServiceProvider(
+        "Test_DP",
+        {LocationKey("MyCorp:USA/NY_1")},
+        PlainTextDocumentation("Test"),
+        namespace="ns-kub-pg-test",
+        gitCredential=Credential("git", CredentialType.API_TOKEN),
+        connectCredentials=Credential("connect", CredentialType.API_TOKEN),
+        postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
+        merge_datacontainer=k8s_merge_datacontainer,
+        git_cache_enabled=False
+    )
+
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
         repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git),
         data_platforms=[
             YellowDataPlatform(
                 name="YellowLive",
-                locs={LocationKey("MyCorp:USA/NY_1")},
                 doc=PlainTextDocumentation("Live Yellow DataPlatform"),
-                namespace=KUB_NAME_SPACE,
-                connectCredentials=Credential("connect", CredentialType.API_TOKEN),
-                postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
-                gitCredential=git,
-                slackCredential=Credential("slack", CredentialType.API_TOKEN),
-                merge_datacontainer=k8s_merge_datacontainer,  # ✅ Kubernetes merge DB
-                airflowName="airflow",
-                milestoneStrategy=YellowMilestoneStrategy.LIVE_ONLY,
-                git_cache_enabled=False
+                platformServiceProvider=psp,
+                milestoneStrategy=YellowMilestoneStrategy.LIVE_ONLY
                 ),
             YellowDataPlatform(
                 "YellowForensic",
-                locs={LocationKey("MyCorp:USA/NY_1")},
                 doc=PlainTextDocumentation("Forensic Yellow DataPlatform"),
-                namespace=KUB_NAME_SPACE,
-                connectCredentials=Credential("connect", CredentialType.API_TOKEN),
-                postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
-                gitCredential=Credential("git", CredentialType.API_TOKEN),
-                slackCredential=Credential("slack", CredentialType.API_TOKEN),
-                merge_datacontainer=k8s_merge_datacontainer,  # ✅ Kubernetes merge DB
-                airflowName="airflow",
-                milestoneStrategy=YellowMilestoneStrategy.BATCH_MILESTONED,
-                git_cache_enabled=False
+                platformServiceProvider=psp,
+                milestoneStrategy=YellowMilestoneStrategy.BATCH_MILESTONED
                 )
         ],
         default_data_platform=DefaultDataPlatform(DataPlatformKey("YellowLive")),
