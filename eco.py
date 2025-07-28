@@ -114,7 +114,7 @@ def createEcosystem() -> Ecosystem:
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 ),
-                CronTrigger("Every 5 minute", "*/5 * * * *"),  # Cron trigger for ingestion
+                CronTrigger("Every 5 minute", "*/1 * * * *"),  # Cron trigger for ingestion
                 IngestionConsistencyType.MULTI_DATASET,  # Ingestion consistency type
                 Credential("postgres", CredentialType.USER_PASSWORD),  # Credential for platform to read from database
                 ),
@@ -195,7 +195,7 @@ def createEcosystem() -> Ecosystem:
             DataTransformer(
                 name="MaskedCustomerGenerator",
                 code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git), "main"),
-                trigger=CronTrigger("Every 10 minute", "*/10 * * * *"),
+                trigger=CronTrigger("Every 1 minute", "*/1 * * * *"),
                 store=Datastore(
                     name="MaskedCustomers",
                     documentation=PlainTextDocumentation("MaskedCustomers datastore"),
