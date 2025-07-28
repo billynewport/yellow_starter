@@ -48,7 +48,7 @@ def createEcosystem() -> Ecosystem:
         "Test_DP",
         {LocationKey("MyCorp:USA/NY_1")},
         PlainTextDocumentation("Test"),
-        namespace="ns-kub-pg-test",
+        namespace=f"{KUB_NAME_SPACE}",
         gitCredential=Credential("git", CredentialType.API_TOKEN),
         connectCredentials=Credential("connect", CredentialType.API_TOKEN),
         postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
