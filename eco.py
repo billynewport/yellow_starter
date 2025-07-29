@@ -58,7 +58,7 @@ def createEcosystem() -> Ecosystem:
 
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
-        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git),
+        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main_edit", credential=git),
         data_platforms=[
             YellowDataPlatform(
                 name="YellowLive",
@@ -92,7 +92,8 @@ def createEcosystem() -> Ecosystem:
                     )
                 ]
             )
-        ]
+        ],
+        liveRepo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git)
     )
     gz: GovernanceZone = ecosys.getZoneOrThrow("USA")
 
