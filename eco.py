@@ -54,7 +54,7 @@ def createEcosystem() -> Ecosystem:
         postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
         merge_datacontainer=k8s_merge_datacontainer,
         git_cache_enabled=False,
-        data_platforms=[
+        dataPlatforms=[
             YellowDataPlatform(
                 name="YellowLive",
                 doc=PlainTextDocumentation("Live Yellow DataPlatform"),
