@@ -13,9 +13,8 @@ from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
 from datasurface.md import StorageRequirement
-from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider
-from datasurface.md import CloudVendor, \
-        DataPlatformKey, WorkspacePlatformConfig
+from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
+from datasurface.md import CloudVendor, WorkspacePlatformConfig
 from datasurface.md import ValidationTree
 from datasurface.md.governance import Datastore, Dataset, SQLSnapshotIngestion, HostPortPair, CronTrigger, IngestionConsistencyType, \
     ConsumerRetentionRequirements, DataMilestoningStrategy, DataLatency
@@ -30,11 +29,7 @@ GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
 GH_DT_REPO_NAME: str = "yellow_starter"  # For now, we use the same repo for the transformer
 
-
-def createEcosystem() -> Ecosystem:
-    """This is a very simple test model with a single datastore and dataset.
-    It is used to test the YellowDataPlatform."""
-
+def createPSP() -> YellowPlatformServiceProvider:
     # Kubernetes merge database configuration
     k8s_merge_datacontainer: PostgresDatabase = PostgresDatabase(
         "K8sMergeDB",  # Container name for Kubernetes deployment
@@ -42,8 +37,6 @@ def createEcosystem() -> Ecosystem:
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
         databaseName="datasurface_merge"  # The database we created
     )
-
-    git: Credential = Credential("git", CredentialType.API_TOKEN)
 
     psp: YellowPlatformServiceProvider = YellowPlatformServiceProvider(
         "Test_DP",
@@ -58,6 +51,25 @@ def createEcosystem() -> Ecosystem:
         pv_storage_class="longhorn",
         git_cache_access_mode="ReadWriteMany",
         git_cache_storage_size = StorageRequirement("5G"),
+        mergeDBStorageNeeds=StorageRequirement("10G"),
+        mergeDBResourceLimits=K8sResourceLimits(
+            requested_memory=StorageRequirement("1G"),
+            limits_memory=StorageRequirement("2G"),
+            requested_cpu=1.0,
+            limits_cpu=2.0
+        ),
+        afWebserverResourceLimits=K8sResourceLimits(
+            requested_memory=StorageRequirement("1G"),
+            limits_memory=StorageRequirement("2G"),
+            requested_cpu=1.0,
+            limits_cpu=2.0
+        ),
+        afSchedulerResourceLimits=K8sResourceLimits(
+            requested_memory=StorageRequirement("3G"),
+            limits_memory=StorageRequirement("5G"),
+            requested_cpu=2.0,
+            limits_cpu=4.0
+        ),
         dataPlatforms=[
             YellowDataPlatform(
                 name="YellowLive",
@@ -71,11 +83,19 @@ def createEcosystem() -> Ecosystem:
                 )
         ]
     )
+    return psp
+
+
+def createEcosystem() -> Ecosystem:
+    """This is a very simple test model with a single datastore and dataset.
+    It is used to test the YellowDataPlatform."""
+
+    git: Credential = Credential("git", CredentialType.API_TOKEN)
 
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
         repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main_edit", credential=git),
-        platform_services_providers=[psp],
+        platform_services_providers=[createPSP()],
         governance_zone_declarations=[
             GovernanceZoneDeclaration("USA", GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "gzmain"))
         ],
