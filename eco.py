@@ -53,7 +53,8 @@ def createEcosystem() -> Ecosystem:
         connectCredentials=Credential("connect", CredentialType.API_TOKEN),
         postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
         merge_datacontainer=k8s_merge_datacontainer,
-        git_cache_enabled=False,
+        git_cache_enabled=True,
+        git_cache_nfs_server_node="kub-test",
         dataPlatforms=[
             YellowDataPlatform(
                 name="YellowLive",
