@@ -12,6 +12,7 @@ from datasurface.md import Ecosystem, LocationKey, DataPlatformManagedDataContai
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
+from datasurface.md import StorageRequirement
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider
 from datasurface.md import CloudVendor, \
         DataPlatformKey, WorkspacePlatformConfig
