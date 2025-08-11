@@ -21,13 +21,15 @@ from datasurface.md.governance import Datastore, Dataset, SQLSnapshotIngestion, 
 from datasurface.md.schema import DDLTable, DDLColumn, NullableStatus, PrimaryKeyStatus
 from datasurface.md.types import VarChar, Date
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
-from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase
+from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase, DataPlatform, EcosystemPipelineGraph, PlatformPipelineGraph
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
+from typing import Any, Optional
 
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
 GH_DT_REPO_NAME: str = "yellow_starter"  # For now, we use the same repo for the transformer
+
 
 def createPSP() -> YellowPlatformServiceProvider:
     # Kubernetes merge database configuration
@@ -50,7 +52,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         git_cache_enabled=True,
         pv_storage_class="longhorn",
         git_cache_access_mode="ReadWriteMany",
-        git_cache_storage_size = StorageRequirement("5G"),
+        git_cache_storage_size=StorageRequirement("5G"),
         mergeDBStorageNeeds=StorageRequirement("10G"),
         mergeDBResourceLimits=K8sResourceLimits(
             requested_memory=StorageRequirement("1G"),
@@ -264,6 +266,21 @@ def test_Validate():
         if vTree.hasWarnings():
             print("Note: There are some warnings:")
             vTree.printTree()
+    live_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowLive")
+    assert live_dp is not None
+    forensic_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowForensic")
+    assert forensic_dp is not None
+    graph: EcosystemPipelineGraph = ecosys.getGraph()
+    assert graph is not None
+    live_root: Optional[PlatformPipelineGraph] = graph.roots.get(live_dp.name)
+    if live_root is None:
+        print(f"Unknown graph for platform: {live_dp.name}")
+    forensic_root: Optional[PlatformPipelineGraph] = graph.roots.get(forensic_dp.name)
+    if forensic_root is None:
+        print(f"Unknown graph for platform: {forensic_dp.name}")
+    else:
+        print(f"Forensic graph for platform: {forensic_dp.name}")
+        print(forensic_root)
 
 
 if __name__ == "__main__":
