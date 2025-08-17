@@ -24,6 +24,7 @@ from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase, DataPlatform, EcosystemPipelineGraph, PlatformPipelineGraph
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
 from typing import Any, Optional
+from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowSingleDatabaseAssembly
 
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
@@ -40,26 +41,17 @@ def createPSP() -> YellowPlatformServiceProvider:
         databaseName="datasurface_merge"  # The database we created
     )
 
-    psp: YellowPlatformServiceProvider = YellowPlatformServiceProvider(
-        "Test_DP",
-        {LocationKey("MyCorp:USA/NY_1")},
-        PlainTextDocumentation("Test"),
+    git_config: GitCacheConfig = GitCacheConfig(
+        enabled=True,
+        access_mode="ReadWriteMany"
+    )
+    yp_assembly: YellowSingleDatabaseAssembly = YellowSingleDatabaseAssembly(
+        name="Test_DP",
         namespace=f"{KUB_NAME_SPACE}",
-        gitCredential=Credential("git", CredentialType.API_TOKEN),
-        connectCredentials=Credential("connect", CredentialType.API_TOKEN),
-        postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
-        merge_datacontainer=k8s_merge_datacontainer,
-        git_cache_enabled=True,
-        pv_storage_class="longhorn",
-        git_cache_access_mode="ReadWriteMany",
-        git_cache_storage_size=StorageRequirement("5G"),
-        mergeDBStorageNeeds=StorageRequirement("10G"),
-        mergeDBResourceLimits=K8sResourceLimits(
-            requested_memory=StorageRequirement("1G"),
-            limits_memory=StorageRequirement("2G"),
-            requested_cpu=1.0,
-            limits_cpu=2.0
-        ),
+        git_cache_config=git_config,
+        nfs_server_node="nfs-server",
+        afHostPortPair=HostPortPair(f"af-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
+        pgStorageNeeds=StorageRequirement("10G"),
         afWebserverResourceLimits=K8sResourceLimits(
             requested_memory=StorageRequirement("1G"),
             limits_memory=StorageRequirement("2G"),
@@ -72,6 +64,24 @@ def createPSP() -> YellowPlatformServiceProvider:
             requested_cpu=2.0,
             limits_cpu=4.0
         ),
+        pgResourceLimits=K8sResourceLimits(
+            requested_memory=StorageRequirement("1G"),
+            limits_memory=StorageRequirement("2G"),
+            requested_cpu=1.0,
+            limits_cpu=2.0
+        )
+    )
+
+    psp: YellowPlatformServiceProvider = YellowPlatformServiceProvider(
+        "Test_DP",
+        {LocationKey("MyCorp:USA/NY_1")},
+        PlainTextDocumentation("Test"),
+        gitCredential=Credential("git", CredentialType.API_TOKEN),
+        connectCredentials=Credential("connect", CredentialType.API_TOKEN),
+        postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
+        yp_assembly=yp_assembly,
+        merge_datacontainer=k8s_merge_datacontainer,
+        pv_storage_class="longhorn",
         dataPlatforms=[
             YellowDataPlatform(
                 name="YellowLive",
