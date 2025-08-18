@@ -24,7 +24,7 @@ from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabase, DataPlatform, EcosystemPipelineGraph, PlatformPipelineGraph
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
 from typing import Any, Optional
-from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowSingleDatabaseAssembly
+from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
 
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
@@ -46,13 +46,11 @@ def createPSP() -> YellowPlatformServiceProvider:
         access_mode="ReadWriteMany",
         storageClass="longhorn"
     )
-    yp_assembly: YellowSingleDatabaseAssembly = YellowSingleDatabaseAssembly(
+    yp_assembly: YellowExternalSingleDatabaseAssembly = YellowExternalSingleDatabaseAssembly(
         name="Test_DP",
         namespace=f"{KUB_NAME_SPACE}",
         git_cache_config=git_config,
-        nfs_server_node="nfs-server",
         afHostPortPair=HostPortPair(f"af-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
-        pgStorageNeeds=StorageRequirement("10G"),
         afWebserverResourceLimits=K8sResourceLimits(
             requested_memory=StorageRequirement("1G"),
             limits_memory=StorageRequirement("2G"),
@@ -64,12 +62,6 @@ def createPSP() -> YellowPlatformServiceProvider:
             limits_memory=StorageRequirement("5G"),
             requested_cpu=2.0,
             limits_cpu=4.0
-        ),
-        pgResourceLimits=K8sResourceLimits(
-            requested_memory=StorageRequirement("1G"),
-            limits_memory=StorageRequirement("2G"),
-            requested_cpu=1.0,
-            limits_cpu=2.0
         )
     )
 
