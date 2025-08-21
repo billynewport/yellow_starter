@@ -71,7 +71,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         PlainTextDocumentation("Test"),
         gitCredential=Credential("git", CredentialType.API_TOKEN),
         connectCredentials=Credential("connect", CredentialType.API_TOKEN),
-        postgresCredential=Credential("postgres", CredentialType.USER_PASSWORD),
+        mergeRW_Credential=Credential("postgres", CredentialType.USER_PASSWORD),
         yp_assembly=yp_assembly,
         merge_datacontainer=k8s_merge_datacontainer,
         pv_storage_class="longhorn",
