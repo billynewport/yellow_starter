@@ -25,6 +25,7 @@ from datasurface.md import Workspace, DatasetSink, DatasetGroup, PostgresDatabas
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
 from typing import Any, Optional
 from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
+from datasurface.md.model_schema import addDatasurfaceModel
 
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
@@ -122,6 +123,10 @@ def createEcosystem() -> Ecosystem:
         ],
         liveRepo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git)
     )
+
+    # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
+
+    addDatasurfaceModel(ecosys, ecosys.owningRepo)
     gz: GovernanceZone = ecosys.getZoneOrThrow("USA")
 
     # Add a team to the governance zone
