@@ -24,5 +24,18 @@
           "status": "PROVISIONED"
         }
       ]
+    },
+    {
+      "dsgName": "DSG",
+      "workspace": "Datasurface_ModelExternalization",
+      "assignments": [
+        {
+          "dataPlatform": "YellowForensic",
+          "documentation": "Forensic Yellow DataPlatform",
+          "productionStatus": "PRODUCTION",
+          "deprecationsAllowed": "NEVER",
+          "status": "PROVISIONED"
+        }
+      ]
     }
   ]
