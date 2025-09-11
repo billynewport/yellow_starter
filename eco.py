@@ -126,7 +126,7 @@ def createEcosystem() -> Ecosystem:
 
     # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
 
-    # addDatasurfaceModel(ecosys, ecosys.owningRepo)
+    addDatasurfaceModel(ecosys, ecosys.owningRepo)
     gz: GovernanceZone = ecosys.getZoneOrThrow("USA")
 
     # Add a team to the governance zone
