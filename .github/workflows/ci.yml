@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Configure CodeArtifact for pip
+      run: |
+        # Get authorization token
+        TOKEN=$(aws codeartifact get-authorization-token \
+          --domain datasurface \
+          --domain-owner 479984738272 \
+          --region us-east-1 \
+          --query authorizationToken \
+          --output text)
+        
+        # Configure pip to use CodeArtifact
+        pip config set global.index-url https://aws:$TOKEN@datasurface-479984738272.d.codeartifact.us-east-1.amazonaws.com/pypi/datasurface/simple/
+        pip config set global.trusted-host datasurface-479984738272.d.codeartifact.us-east-1.amazonaws.com
+        
+        echo "✅ CodeArtifact configured successfully"
+    
+    - name: Create virtual environment
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+        echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Verify datasurface installation
+      run: |
+        pip show datasurface
+        python -c "import datasurface; print(f'✅ datasurface {datasurface.__version__} imported successfully')"
+    
+    - name: Run tests
+      run: |
+        # Add your test commands here, for example:
+        # python -m pytest tests/
+        # python -m unittest discover
+        echo "✅ Tests would run here - add your test commands"
+        
+        # Example: Run a simple test to verify datasurface works
+        python -c "
+        try:
+            import datasurface
+            print('✅ datasurface module imported successfully')
+        except ImportError as e:
+            print('❌ Failed to import datasurface:', e)
+            exit(1)
+        "

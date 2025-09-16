@@ -8,7 +8,8 @@ It will generate 2 pipelines, one with live records only and the other with full
 
 from datasurface.md import Team, GovernanceZoneDeclaration, GovernanceZone, InfrastructureVendor, InfrastructureLocation, \
     TeamDeclaration, DataTransformer
-from datasurface.md import Ecosystem, LocationKey, DataPlatformManagedDataContainer
+from datasurface.md import Ecosystem, LocationKey
+from datasurface.md.containers import DataPlatformManagedDataContainer, SQLSnapshotIngestion, HostPortPair
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
@@ -16,7 +17,7 @@ from datasurface.md import StorageRequirement
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
 from datasurface.md import CloudVendor, WorkspacePlatformConfig
 from datasurface.md import ValidationTree
-from datasurface.md.governance import Datastore, Dataset, SQLSnapshotIngestion, HostPortPair, CronTrigger, IngestionConsistencyType, \
+from datasurface.md.governance import Datastore, Dataset, CronTrigger, IngestionConsistencyType, \
     ConsumerRetentionRequirements, DataMilestoningStrategy, DataLatency
 from datasurface.md.schema import DDLTable, DDLColumn, NullableStatus, PrimaryKeyStatus
 from datasurface.md.types import VarChar, Date
