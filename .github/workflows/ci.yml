@@ -35,11 +35,12 @@ jobs:
           --query authorizationToken \
           --output text)
         
-        # Configure pip to use CodeArtifact
+        # Configure pip to use CodeArtifact as primary index with PyPI as fallback
         pip config set global.index-url https://aws:$TOKEN@datasurface-479984738272.d.codeartifact.us-east-1.amazonaws.com/pypi/datasurface/simple/
-        pip config set global.trusted-host datasurface-479984738272.d.codeartifact.us-east-1.amazonaws.com
+        pip config set global.extra-index-url https://pypi.org/simple/
+        pip config set global.trusted-host "datasurface-479984738272.d.codeartifact.us-east-1.amazonaws.com pypi.org"
         
-        echo "✅ CodeArtifact configured successfully"
+        echo "✅ CodeArtifact configured with PyPI fallback"
     
     - name: Create virtual environment
       run: |
