@@ -32,9 +32,9 @@ class TestEcosystem(unittest.TestCase):
             if vTree.hasWarnings():
                 print("Note: There are some warnings:")
                 vTree.printTree()
-        live_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowLive")
+        live_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowLive")  # type: ignore
         self.assertIsNotNone(live_dp)
-        forensic_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowForensic")
+        forensic_dp: DataPlatform[Any] = ecosys.getDataPlatformOrThrow("YellowForensic")  # type: ignore
         self.assertIsNotNone(forensic_dp)
         graph: EcosystemPipelineGraph = ecosys.getGraph()
         self.assertIsNotNone(graph)
