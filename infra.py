@@ -137,7 +137,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         },
         hints={
             # Run the MaskedCustomer data transformer on the SQLServer consumer replica group
-            "MaskedCustomerPlacement": K8sDataTransformerHint(
+            "MaskedStoreGenerator": K8sDataTransformerHint(
                 workspaceName="MaskedStoreGenerator",
                 kv={},
                 resourceLimits=K8sResourceLimits(
