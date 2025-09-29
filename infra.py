@@ -102,7 +102,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                         databaseName="cqrs"
                     )
                 },
-                workspaceNames={"Consumer1"},
+                workspaceNames={"Consumer1", "MaskedStoreGenerator"},
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("sqlserver", CredentialType.USER_PASSWORD)
             ),
