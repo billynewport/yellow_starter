@@ -135,9 +135,9 @@ def createPSP() -> YellowPlatformServiceProvider:
                 credential=Credential("db2", CredentialType.USER_PASSWORD)
             )
         },
-        hints={
+        hints=[
             # Run the MaskedCustomer data transformer on the SQLServer consumer replica group
-            "MaskedStoreGenerator": K8sDataTransformerHint(
+            K8sDataTransformerHint(
                 workspaceName="MaskedStoreGenerator",
                 kv={},
                 resourceLimits=K8sResourceLimits(
@@ -151,6 +151,6 @@ def createPSP() -> YellowPlatformServiceProvider:
                     dcName="SQLServer"
                 )
             )
-        }
+        ]
     )
     return psp
