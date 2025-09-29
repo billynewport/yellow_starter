@@ -15,7 +15,7 @@ from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md import StorageRequirement
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
-from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger
+from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger, PlatformDataTransformerHint, DataTransformerExecutionPlacement
 from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
 from datasurface.md.containers import SQLServerDatabase, OracleDatabase, DB2Database
 
@@ -134,6 +134,10 @@ def createPSP() -> YellowPlatformServiceProvider:
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("db2", CredentialType.USER_PASSWORD)
             )
+        },
+        hints={
+            # Run the MaskedCustomer data transformer on the SQLServer consumer replica group
+            "MaskedCustomerPlacement": PlatformDataTransformerHint("MaskedCustomer", {"workspaceName": "MaskedCustomer", "crgName": "SQLServer", "dcName": "SQLServer"})
         }
     )
     return psp
