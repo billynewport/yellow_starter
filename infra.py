@@ -9,16 +9,16 @@ to that data in Postgres, SQLServer, Oracle and DB2 using CQRS.
 It will generate 2 pipelines, one with live records only (SCD1) and the other with full milestoning (SCD2).
 """
 
-from datasurface.md import LocationKey
+from datasurface.md import DataTransformerExecutionPlacement, LocationKey
 from datasurface.md.containers import HostPortPair
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md import StorageRequirement
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
-from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger, PlatformDataTransformerHint, DataTransformerExecutionPlacement
+from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger
 from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
 from datasurface.md.containers import SQLServerDatabase, OracleDatabase, DB2Database
-
+from datasurface.platforms.yellow.yellow_dp import K8sDataTransformerHint
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 
 
@@ -137,7 +137,20 @@ def createPSP() -> YellowPlatformServiceProvider:
         },
         hints={
             # Run the MaskedCustomer data transformer on the SQLServer consumer replica group
-            "MaskedCustomerPlacement": PlatformDataTransformerHint("MaskedCustomer", {"workspaceName": "MaskedCustomer", "crgName": "SQLServer", "dcName": "SQLServer"})
+            "MaskedCustomerPlacement": K8sDataTransformerHint(
+                workspaceName="MaskedStoreGenerator",
+                kv={},
+                resourceLimits=K8sResourceLimits(
+                    requested_memory=StorageRequirement("1G"),
+                    limits_memory=StorageRequirement("2G"),
+                    requested_cpu=1.0,
+                    limits_cpu=2.0
+                ),
+                executionPlacement=DataTransformerExecutionPlacement(
+                    crgName="SQLServer",
+                    dcName="SQLServer"
+                )
+            )
         }
     )
     return psp
