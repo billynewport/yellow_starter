@@ -77,8 +77,8 @@ def createPSP() -> YellowPlatformServiceProvider:
                 milestoneStrategy=YellowMilestoneStrategy.SCD2
                 )
         ],
-        consumerReplicaGroups={
-            "Postgres": ConsumerReplicaGroup(
+        consumerReplicaGroups=[
+            ConsumerReplicaGroup(
                 name="postgres",
                 dataContainers={
                     PostgresDatabase(
@@ -92,7 +92,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("postgres", CredentialType.USER_PASSWORD)
             ),
-            "SQLServer": ConsumerReplicaGroup(
+            ConsumerReplicaGroup(
                 name="SQLServer",
                 dataContainers={
                     SQLServerDatabase(
@@ -106,7 +106,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("sqlserver", CredentialType.USER_PASSWORD)
             ),
-            "Oracle": ConsumerReplicaGroup(
+            ConsumerReplicaGroup(
                 name="Oracle",
                 dataContainers={
                     OracleDatabase(
@@ -120,7 +120,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("oracle", CredentialType.USER_PASSWORD)
             ),
-            "DB2": ConsumerReplicaGroup(
+            ConsumerReplicaGroup(
                 name="DB2",
                 dataContainers={
                     DB2Database(
@@ -134,7 +134,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
                 credential=Credential("db2", CredentialType.USER_PASSWORD)
             )
-        },
+        ],
         hints=[
             # Run the MaskedCustomer data transformer on the SQLServer consumer replica group
             K8sDataTransformerHint(
