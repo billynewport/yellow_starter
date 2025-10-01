@@ -125,7 +125,7 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
             DataTransformer(
                 name="MaskedCustomerGenerator",
                 code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git), "main"),
-                credential=Credential("sqlserver", CredentialType.USER_PASSWORD),  # Use the CRG sql server credential for now.
+                credential=Credential("mask_dt_cred", CredentialType.USER_PASSWORD),  # Use the CRG sql server credential for now.
                 trigger=CronTrigger("Every 1 minute", "*/1 * * * *"),
                 store=Datastore(
                     name="MaskedCustomers",
