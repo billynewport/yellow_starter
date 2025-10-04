@@ -17,7 +17,7 @@ from datasurface.md import StorageRequirement
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
 from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger
 from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
-from datasurface.md.containers import SQLServerDatabase, OracleDatabase, DB2Database
+from datasurface.md.containers import SQLServerDatabase
 from datasurface.platforms.yellow.yellow_dp import K8sDataTransformerHint
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 
@@ -26,7 +26,7 @@ def createPSP() -> YellowPlatformServiceProvider:
     # Kubernetes merge database configuration
     k8s_merge_datacontainer: PostgresDatabase = PostgresDatabase(
         "K8sMergeDB",  # Container name for Kubernetes deployment
-        hostPort=HostPortPair("postgres.leopard-mizar.ts.net", 5432),
+        hostPort=HostPortPair("postgres.docker", 5432),
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
         databaseName="datasurface_merge"  # The database we created
     )
@@ -83,7 +83,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 dataContainers={
                     PostgresDatabase(
                         "Postgres",
-                        hostPort=HostPortPair("postgres.leopard-mizar.ts.net", 5432),
+                        hostPort=HostPortPair("postgres.docker", 5432),
                         locations={LocationKey("MyCorp:USA/NY_1")},
                         databaseName="postgres-cqrs"
                     )
@@ -97,42 +97,14 @@ def createPSP() -> YellowPlatformServiceProvider:
                 dataContainers={
                     SQLServerDatabase(
                         "SQLServer",
-                        hostPort=HostPortPair("sqlserver.leopard-mizar.ts.net", 1433),
+                        hostPort=HostPortPair("sqlserver.docker", 1433),
                         locations={LocationKey("MyCorp:USA/NY_1")},
                         databaseName="cqrs"
                     )
                 },
                 workspaceNames={"Consumer1", "MaskedStoreGenerator"},
                 trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
-                credential=Credential("sqlserver", CredentialType.USER_PASSWORD)
-            ),
-            ConsumerReplicaGroup(
-                name="Oracle",
-                dataContainers={
-                    OracleDatabase(
-                        "Oracle",
-                        hostPort=HostPortPair("oracle.leopard-mizar.ts.net", 1521),
-                        locations={LocationKey("MyCorp:USA/NY_1")},
-                        databaseName="cqrs"
-                    )
-                },
-                workspaceNames={"Consumer1"},
-                trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
-                credential=Credential("oracle", CredentialType.USER_PASSWORD)
-            ),
-            ConsumerReplicaGroup(
-                name="DB2",
-                dataContainers={
-                    DB2Database(
-                        "DB2",
-                        hostPort=HostPortPair("db2.leopard-mizar.ts.net", 50000),
-                        locations={LocationKey("MyCorp:USA/NY_1")},
-                        databaseName="cqrs"
-                    )
-                },
-                workspaceNames={"Consumer1"},
-                trigger=CronTrigger("Every 5 minute", "*/5 * * * *"),
-                credential=Credential("db2", CredentialType.USER_PASSWORD)
+                credential=Credential("sa", CredentialType.USER_PASSWORD)
             )
         ],
         hints=[
