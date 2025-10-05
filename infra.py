@@ -40,7 +40,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         name="Test_DP",
         namespace=f"{KUB_NAME_SPACE}",
         git_cache_config=git_config,
-        afHostPortPair=HostPortPair(f"af-data.{KUB_NAME_SPACE}.svc.cluster.local", 5432),
+        afHostPortPair=HostPortPair(f"postgres-docker", 5432),
         afWebserverResourceLimits=K8sResourceLimits(
             requested_memory=StorageRequirement("1G"),
             limits_memory=StorageRequirement("2G"),
