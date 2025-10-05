@@ -33,7 +33,7 @@ def createPSP() -> YellowPlatformServiceProvider:
 
     git_config: GitCacheConfig = GitCacheConfig(
         enabled=True,
-        access_mode="ReadWriteMany",
+        access_mode="ReadWriteOnce",
         storageClass="standard"
     )
     yp_assembly: YellowExternalSingleDatabaseAssembly = YellowExternalSingleDatabaseAssembly(
