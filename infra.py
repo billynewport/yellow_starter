@@ -26,14 +26,14 @@ def createPSP() -> YellowPlatformServiceProvider:
     # Kubernetes merge database configuration
     k8s_merge_datacontainer: PostgresDatabase = PostgresDatabase(
         "K8sMergeDB",  # Container name for Kubernetes deployment
-        hostPort=HostPortPair("host.docker.internal", 5432),
+        hostPort=HostPortPair("postgres-docker", 5432),
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
         databaseName="datasurface_merge"  # The database we created
     )
 
     git_config: GitCacheConfig = GitCacheConfig(
         enabled=True,
-        access_mode="ReadWriteMany",
+        access_mode="ReadWriteOnce",
         storageClass="standard"
     )
     yp_assembly: YellowExternalSingleDatabaseAssembly = YellowExternalSingleDatabaseAssembly(

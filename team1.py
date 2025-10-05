@@ -40,7 +40,7 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
             capture_metadata=SQLSnapshotIngestion(
                 PostgresDatabase(
                     "CustomerDB",  # Model name for database
-                    hostPort=HostPortPair("host.docker.internal", 5432),
+                    hostPort=HostPortPair("postgres-docker", 5432),
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 ),
