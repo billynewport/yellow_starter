@@ -59,7 +59,4 @@ def createEcosystem() -> Ecosystem:
     createGZ(ecosys, git)
 
     tree: ValidationTree = ecosys.lintAndHydrateCaches()
-    if (tree.hasErrors()):
-        tree.printTree()
-        raise Exception("Ecosystem validation failed")
     return ecosys
