@@ -19,6 +19,7 @@ from datasurface.md.credential import CredentialType
 from datasurface.md.repo import GitHubRepository
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
+from datasurface.md.repo import LatestVersionInRepository
 
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
@@ -124,7 +125,8 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
             ),
             DataTransformer(
                 name="MaskedCustomerGenerator",
-                code=PythonRepoCodeArtifact(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git), "main"),
+                code=PythonRepoCodeArtifact(
+                    LatestVersionInRepository(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git))),
                 credential=Credential("mask_dt_cred", CredentialType.USER_PASSWORD),  # Use the CRG sql server credential for now.
                 trigger=CronTrigger("Every 1 minute", "*/1 * * * *"),
                 store=Datastore(

@@ -15,7 +15,7 @@ from datasurface.md import CloudVendor
 from datasurface.md import ValidationTree
 from datasurface.md.model_schema import addDatasurfaceModel
 from infra import createPSP
-
+from datasurface.md.repo import LatestVersionInRepository
 from gz import createGZ
 
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
@@ -49,7 +49,7 @@ def createEcosystem() -> Ecosystem:
                 ]
             )
         ],
-        liveRepo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git)
+        liveRepo=LatestVersionInRepository(GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git))
     )
 
     # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
@@ -58,5 +58,5 @@ def createEcosystem() -> Ecosystem:
     # Add the governance zone and associated teamsto the ecosystem.
     createGZ(ecosys, git)
 
-    tree: ValidationTree = ecosys.lintAndHydrateCaches()
+    _: ValidationTree = ecosys.lintAndHydrateCaches()
     return ecosys
