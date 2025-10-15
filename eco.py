@@ -11,8 +11,8 @@ from datasurface.md import Ecosystem
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
-from datasurface.md import CloudVendor
-from datasurface.md import ValidationTree
+from datasurface.md import CloudVendor, PSPDeclaration
+from datasurface.md import ValidationTree, PlatformServicesProvider
 from datasurface.md.model_schema import addDatasurfaceModel
 from infra import createPSP
 from datasurface.md.repo import LatestVersionInRepository
@@ -25,14 +25,18 @@ GH_DT_REPO_NAME: str = "yellow_starter"  # For now, we use the same repo for the
 
 def createEcosystem() -> Ecosystem:
     """This is a very simple test model with a single datastore and dataset.
-    It is used to test the YellowDataPlatform."""
+    It is used to test the YellowDataPlatform. We are using a monorepo approach
+    so all the model fragments use the same owning repository.
+    """
 
     git: Credential = Credential("git", CredentialType.API_TOKEN)
+    psp: PlatformServicesProvider = createPSP()
+    eRepo: GitHubRepository = GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main_edit", credential=git)
 
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
-        repo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main_edit", credential=git),
-        platform_services_providers=[createPSP()],
+        repo=eRepo,
+        pspDeclarations=[PSPDeclaration(psp.name, eRepo)],
         infrastructure_vendors=[
             # Onsite data centers
             InfrastructureVendor(
@@ -51,6 +55,7 @@ def createEcosystem() -> Ecosystem:
         ],
         liveRepo=LatestVersionInRepository(GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git))
     )
+    ecosys.definePSP(psp)
 
     # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
     addDatasurfaceModel(ecosys, ecosys.owningRepo)
