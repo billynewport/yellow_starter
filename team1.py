@@ -10,16 +10,18 @@ from datasurface.md import (
     Team, GovernanceZone, DataTransformer, Ecosystem, LocationKey, Credential,
     PlainTextDocumentation, WorkspacePlatformConfig, Datastore, Dataset, CronTrigger,
     IngestionConsistencyType, ConsumerRetentionRequirements, DataMilestoningStrategy, DataLatency, DDLTable, DDLColumn, NullableStatus,
-    PrimaryKeyStatus, VarChar, Date, Workspace, DatasetSink, DatasetGroup, PostgresDatabase, TeamDeclaration
+    PrimaryKeyStatus, VarChar, Date, Workspace, DatasetSink, DatasetGroup, PostgresDatabase, TeamDeclaration,
+    EnvironmentMap, EnvRefDataContainer
 )
 from datasurface.md.containers import (
     DataPlatformManagedDataContainer, SQLSnapshotIngestion, HostPortPair
 )
 from datasurface.md.credential import CredentialType
-from datasurface.md.repo import GitHubRepository
+from datasurface.md.repo import GitHubRepository, VersionedRepository
 from datasurface.md.policy import SimpleDC, SimpleDCTypes
 from datasurface.md.codeartifact import PythonRepoCodeArtifact
-from datasurface.md.repo import LatestVersionInRepository
+from datasurface.md.repo import EnvRefReleaseSelector
+from datasurface.md.repo import VersionPatternReleaseSelector, VersionPatterns, ReleaseType
 
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
@@ -34,17 +36,26 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
         ))
 
     team: Team = gz.getTeamOrThrow("team1")
+    team.add(EnvironmentMap(
+        keyword="prod",
+        dataContainers={
+            frozenset(["customer_db"]): PostgresDatabase(
+                    "CustomerDB",  # Model name for database
+                    hostPort=HostPortPair("postgres-docker", 5432),
+                    locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
+                    databaseName="customer_db"  # Database name
+                )
+            },
+        dtReleaseSelectors={
+            "custMaskRev": VersionPatternReleaseSelector(VersionPatterns.VN_N_N+"-prod", ReleaseType.STABLE_ONLY)
+        }
+        ))
     team.add(
         Datastore(
             "Store1",
             documentation=PlainTextDocumentation("Test datastore"),
             capture_metadata=SQLSnapshotIngestion(
-                PostgresDatabase(
-                    "CustomerDB",  # Model name for database
-                    hostPort=HostPortPair("postgres-docker", 5432),
-                    locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
-                    databaseName="customer_db"  # Database name
-                ),
+                EnvRefDataContainer("customer_db"),
                 CronTrigger("Every 5 minute", "*/1 * * * *"),  # Cron trigger for ingestion
                 IngestionConsistencyType.MULTI_DATASET,  # Ingestion consistency type
                 Credential("postgres", CredentialType.USER_PASSWORD),  # Credential for platform to read from database
@@ -126,8 +137,12 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
             DataTransformer(
                 name="MaskedCustomerGenerator",
                 code=PythonRepoCodeArtifact(
-                    LatestVersionInRepository(GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git))),
-                runAsCredential=Credential("mask_dt_cred", CredentialType.USER_PASSWORD),  # Use the CRG sql server credential for now.
+                    VersionedRepository(
+                        GitHubRepository(f"{GH_REPO_OWNER}/{GH_DT_REPO_NAME}", "main", credential=git),
+                        EnvRefReleaseSelector("custMaskRev")
+                    )
+                ),
+                runAsCredential=Credential("mask_dt_cred", CredentialType.USER_PASSWORD),
                 trigger=CronTrigger("Every 1 minute", "*/1 * * * *"),
                 store=Datastore(
                     name="MaskedCustomers",

@@ -11,11 +11,12 @@ from datasurface.md import Ecosystem
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
-from datasurface.md import CloudVendor, PSPDeclaration
+from datasurface.md import CloudVendor, PSPDeclaration, RuntimeDeclaration
 from datasurface.md import ValidationTree, PlatformServicesProvider
 from datasurface.md.model_schema import addDatasurfaceModel
 from infra import createPSP
-from datasurface.md.repo import LatestVersionInRepository
+from datasurface.md.repo import LatestCommitSelector
+from datasurface.md import RuntimeEnvironment
 from gz import createGZ
 
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
@@ -36,7 +37,7 @@ def createEcosystem() -> Ecosystem:
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
         repo=eRepo,
-        pspDeclarations=[PSPDeclaration(psp.name, eRepo)],
+        runtimeDecls=[RuntimeDeclaration("prod", eRepo)],
         infrastructure_vendors=[
             # Onsite data centers
             InfrastructureVendor(
@@ -53,9 +54,12 @@ def createEcosystem() -> Ecosystem:
                 ]
             )
         ],
-        liveRepo=LatestVersionInRepository(GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git))
+        liveRepo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git)
     )
-    ecosys.definePSP(psp)
+    # Define the prod RTE
+    rte: RuntimeEnvironment = ecosys.getRuntimeEnvironmentOrThrow("prod")
+    rte.configure(LatestCommitSelector(), [PSPDeclaration(psp.name, eRepo)])
+    rte.setPSP(psp)
 
     # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
     addDatasurfaceModel(ecosys, ecosys.owningRepo)
