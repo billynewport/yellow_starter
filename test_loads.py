@@ -8,7 +8,7 @@ class TestEcosystem(unittest.TestCase):
     def test_createEcosystem(self):
         ecosys: Optional[Ecosystem]
         ecoTree: Optional[ValidationTree]
-        ecosys, ecoTree = loadEcosystemFromEcoModule(".")
+        ecosys, ecoTree = loadEcosystemFromEcoModule(".", "prod")  # prod is the runtime environment name
         self.assertIsNotNone(ecosys)
         self.assertIsNotNone(ecoTree)
         assert ecoTree is not None
