@@ -26,7 +26,7 @@ def createPSP() -> YellowPlatformServiceProvider:
     # Kubernetes merge database configuration
     k8s_merge_datacontainer: PostgresDatabase = PostgresDatabase(
         "K8sMergeDB",  # Container name for Kubernetes deployment
-        hostPort=HostPortPair("postgres-docker", 5432),
+        hostPort=HostPortPair("postgres", 5432),
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
         databaseName="datasurface_merge"  # The database we created
     )
@@ -40,7 +40,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         name="Test_DP",
         namespace=f"{KUB_NAME_SPACE}",
         git_cache_config=git_config,
-        afHostPortPair=HostPortPair("postgres-docker", 5432),
+        afHostPortPair=HostPortPair("postgres", 5432),
         afWebserverResourceLimits=K8sResourceLimits(
             requested_memory=StorageRequirement("1G"),
             limits_memory=StorageRequirement("2G"),
@@ -83,7 +83,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 dataContainers={
                     PostgresDatabase(
                         "Postgres",
-                        hostPort=HostPortPair("postgres-docker", 5432),
+                        hostPort=HostPortPair("postgres", 5432),
                         locations={LocationKey("MyCorp:USA/NY_1")},
                         databaseName="postgres-cqrs"
                     )
@@ -97,7 +97,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                 dataContainers={
                     SQLServerDatabase(
                         "SQLServer",
-                        hostPort=HostPortPair("sqlserver-docker", 1433),
+                        hostPort=HostPortPair("sqlserver", 1433),
                         locations={LocationKey("MyCorp:USA/NY_1")},
                         databaseName="cqrs"
                     )
