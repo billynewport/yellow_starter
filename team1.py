@@ -41,7 +41,7 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
         dataContainers={
             frozenset(["customer_db"]): PostgresDatabase(
                     "CustomerDB",  # Model name for database
-                    hostPort=HostPortPair("postgres-docker", 5432),
+                    hostPort=HostPortPair("postgres", 5432),
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
                     databaseName="customer_db"  # Database name
                 )
