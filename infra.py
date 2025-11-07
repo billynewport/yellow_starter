@@ -34,7 +34,7 @@ def createPSP() -> YellowPlatformServiceProvider:
     git_config: GitCacheConfig = GitCacheConfig(
         enabled=True,
         access_mode="ReadWriteOnce",
-        storageClass="standard"
+        storageClass="longhorn"
     )
     yp_assembly: YellowExternalSingleDatabaseAssembly = YellowExternalSingleDatabaseAssembly(
         name="Test_DP",
@@ -64,7 +64,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         mergeRW_Credential=Credential("postgres", CredentialType.USER_PASSWORD),
         yp_assembly=yp_assembly,
         merge_datacontainer=k8s_merge_datacontainer,
-        pv_storage_class="standard",
+        pv_storage_class="longhorn",
         dataPlatforms=[
             YellowDataPlatform(
                 name="YellowLive",
