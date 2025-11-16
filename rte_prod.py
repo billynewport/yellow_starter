@@ -13,12 +13,13 @@ from datasurface.md import DataTransformerExecutionPlacement, LocationKey
 from datasurface.md.containers import HostPortPair
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
-from datasurface.md import StorageRequirement
+from datasurface.md import StorageRequirement, ProductionStatus
 from datasurface.platforms.yellow import YellowDataPlatform, YellowMilestoneStrategy, YellowPlatformServiceProvider, K8sResourceLimits
-from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger
+from datasurface.md import PostgresDatabase, ConsumerReplicaGroup, CronTrigger, RuntimeEnvironment, Ecosystem, PSPDeclaration
 from datasurface.platforms.yellow.assembly import GitCacheConfig, YellowExternalSingleDatabaseAssembly
 from datasurface.md.containers import SQLServerDatabase
 from datasurface.platforms.yellow.yellow_dp import K8sDataTransformerHint
+from datasurface.md.repo import VersionPatternReleaseSelector, GitHubRepository, ReleaseType, VersionPatterns
 KUB_NAME_SPACE: str = "ns-yellow-starter"  # This is the namespace you want to use for your kubernetes environment
 
 
@@ -28,6 +29,7 @@ def createPSP() -> YellowPlatformServiceProvider:
         "K8sMergeDB",  # Container name for Kubernetes deployment
         hostPort=HostPortPair("postgres", 5432),
         locations={LocationKey("MyCorp:USA/NY_1")},  # Kubernetes cluster location
+        productionStatus=ProductionStatus.PRODUCTION,
         databaseName="datasurface_merge"  # The database we created
     )
 
@@ -85,6 +87,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                         "Postgres",
                         hostPort=HostPortPair("postgres", 5432),
                         locations={LocationKey("MyCorp:USA/NY_1")},
+                        productionStatus=ProductionStatus.PRODUCTION,
                         databaseName="postgres-cqrs"
                     )
                 },
@@ -99,6 +102,7 @@ def createPSP() -> YellowPlatformServiceProvider:
                         "SQLServer",
                         hostPort=HostPortPair("sqlserver", 1433),
                         locations={LocationKey("MyCorp:USA/NY_1")},
+                        productionStatus=ProductionStatus.PRODUCTION,
                         databaseName="cqrs"
                     )
                 },
@@ -126,3 +130,17 @@ def createPSP() -> YellowPlatformServiceProvider:
         ]
     )
     return psp
+
+
+def createProdRTE(ecosys: Ecosystem) -> RuntimeEnvironment:
+    assert isinstance(ecosys.owningRepo, GitHubRepository)
+
+    psp: YellowPlatformServiceProvider = createPSP()
+    rte: RuntimeEnvironment = ecosys.getRuntimeEnvironmentOrThrow("prod")
+    # Allow edits using RTE repository
+    rte.configure(VersionPatternReleaseSelector(
+        VersionPatterns.VN_N_N+"-prod", ReleaseType.STABLE_ONLY),
+        [PSPDeclaration(psp.name, rte.owningRepo)],
+        productionStatus=ProductionStatus.PRODUCTION)
+    rte.setPSP(psp)
+    return rte

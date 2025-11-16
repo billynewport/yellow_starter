@@ -11,10 +11,10 @@ from datasurface.md import (
     PlainTextDocumentation, WorkspacePlatformConfig, Datastore, Dataset, CronTrigger,
     IngestionConsistencyType, ConsumerRetentionRequirements, DataMilestoningStrategy, DataLatency, DDLTable, DDLColumn, NullableStatus,
     PrimaryKeyStatus, VarChar, Date, Workspace, DatasetSink, DatasetGroup, PostgresDatabase, TeamDeclaration,
-    EnvironmentMap, EnvRefDataContainer
+    EnvironmentMap, EnvRefDataContainer, ProductionStatus, DataPlatformManagedDataContainer
 )
 from datasurface.md.containers import (
-    DataPlatformManagedDataContainer, SQLSnapshotIngestion, HostPortPair
+    SQLSnapshotIngestion, HostPortPair
 )
 from datasurface.md.credential import CredentialType
 from datasurface.md.repo import GitHubRepository, VersionedRepository
@@ -43,11 +43,27 @@ def createTeam(ecosys: Ecosystem, git: Credential) -> Team:
                     "CustomerDB",  # Model name for database
                     hostPort=HostPortPair("postgres", 5432),
                     locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
+                    productionStatus=ProductionStatus.PRODUCTION,
                     databaseName="customer_db"  # Database name
                 )
             },
         dtReleaseSelectors={
             "custMaskRev": VersionPatternReleaseSelector(VersionPatterns.VN_N_N+"-prod", ReleaseType.STABLE_ONLY)
+        }
+        ))
+    team.add(EnvironmentMap(
+        keyword="uat",
+        dataContainers={
+            frozenset(["customer_db"]): PostgresDatabase(
+                    "CustomerDB",  # Model name for database
+                    hostPort=HostPortPair("postgres-uat", 5432),
+                    locations={LocationKey("MyCorp:USA/NY_1")},  # Locations for database
+                    productionStatus=ProductionStatus.NOT_PRODUCTION,
+                    databaseName="customer_db-uat"  # Database name
+                )
+            },
+        dtReleaseSelectors={
+            "custMaskRev": VersionPatternReleaseSelector(VersionPatterns.VN_N_N+"-uat", ReleaseType.STABLE_ONLY)
         }
         ))
     team.add(

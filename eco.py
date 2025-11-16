@@ -11,13 +11,12 @@ from datasurface.md import Ecosystem
 from datasurface.md.credential import Credential, CredentialType
 from datasurface.md.documentation import PlainTextDocumentation
 from datasurface.md.repo import GitHubRepository
-from datasurface.md import CloudVendor, PSPDeclaration, RuntimeDeclaration
-from datasurface.md import ValidationTree, PlatformServicesProvider
+from datasurface.md import CloudVendor, RuntimeDeclaration
+from datasurface.md import ValidationTree
 from datasurface.md.model_schema import addDatasurfaceModel
-from infra import createPSP
-from datasurface.md.repo import LatestCommitSelector
-from datasurface.md import RuntimeEnvironment
 from gz import createGZ
+from rte_prod import createProdRTE
+from rte_uat import createUATRTE
 
 GH_REPO_OWNER: str = "billynewport"  # Change to your github username
 GH_REPO_NAME: str = "yellow_starter"  # Change to your github repository name containing this project
@@ -31,13 +30,15 @@ def createEcosystem() -> Ecosystem:
     """
 
     git: Credential = Credential("git", CredentialType.API_TOKEN)
-    psp: PlatformServicesProvider = createPSP()
     eRepo: GitHubRepository = GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main_edit", credential=git)
 
     ecosys: Ecosystem = Ecosystem(
         name="YellowStarter",
         repo=eRepo,
-        runtimeDecls=[RuntimeDeclaration("prod", eRepo)],
+        runtimeDecls=[
+            RuntimeDeclaration("prod", GitHubRepository(eRepo.repositoryName, "prod_rte_edit", credential=git)),
+            RuntimeDeclaration("uat", GitHubRepository(eRepo.repositoryName, "uat_rte_edit", credential=git))
+        ],
         infrastructure_vendors=[
             # Onsite data centers
             InfrastructureVendor(
@@ -57,10 +58,8 @@ def createEcosystem() -> Ecosystem:
         liveRepo=GitHubRepository(f"{GH_REPO_OWNER}/{GH_REPO_NAME}", "main", credential=git)
     )
     # Define the prod RTE
-    rte: RuntimeEnvironment = ecosys.getRuntimeEnvironmentOrThrow("prod")
-    rte.configure(LatestCommitSelector(), [PSPDeclaration(psp.name, eRepo)])
-    rte.setPSP(psp)
-
+    createProdRTE(ecosys)
+    createUATRTE(ecosys)
     # Add the system models to the ecosystem. They can be modified by the ecosystem repository owners.
     addDatasurfaceModel(ecosys, ecosys.owningRepo)
 
